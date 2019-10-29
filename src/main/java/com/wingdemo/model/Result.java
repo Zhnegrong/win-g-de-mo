@@ -13,23 +13,38 @@ import java.util.List;
  */
 public class Result { 
 	private String PurchaseOrder;
+	private String BookedDC;
 	private String SourceERP;
 	private String Vendor;
 	private String Line;
 	private String Item;
 	private int ItemQty;
 	private Date PlanDate;
-	private int onTimeQte; 
+	private int onTimeQte=0; 
+	private int bookedQte=0;
+
 	private List<DelayRecord> Delays=new ArrayList<DelayRecord>(); 
-	public Result(String po,String erp,String vendor,String line, String item,int qte, Date date) {
+	public Result(String po,String bookedDC,String erp,String vendor,String line, String item,int qte, Date date) {
 		this.PurchaseOrder=po;
+		this.BookedDC=bookedDC;
 		this.SourceERP=erp;
 		this.Vendor=vendor;
 		this.Line=line;
 		this.Item=item;
 		this.ItemQty=qte;
 		this.PlanDate=date;
-		this.onTimeQte=0;
+	}
+	public int getBookedQte() {
+		return bookedQte;
+	}
+	public void setBookedQte(int bookedQte) {
+		this.bookedQte = bookedQte;
+	}
+	public String getBookedDC() {
+		return BookedDC;
+	}
+	public void setBookedDC(String bookedDC) {
+		BookedDC = bookedDC;
 	}
 	public void addRecord(DelayRecord record) {
 		Delays.add(record);

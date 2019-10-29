@@ -108,13 +108,14 @@ public class AnalysisService {
 	 */
 	public List<Result> compareBookingWithPO(Map<String, Map<String, PO>> poMap,
 			Map<String, Map<String, Booking>> booksMap) throws Exception {
-		List<Result> results = new ArrayList<Result>();
+		//Create the new workbook and insert the first line
 		XSSFWorkbook workbook = new XSSFWorkbook();
 		XSSFSheet delay_sheet = workbook.createSheet("delay");
 		int delay_rowNum = 1, notbooked_rowNum = 1;
 		XSSFSheet notbooked_sheet = workbook.createSheet("notbooked");
 		prepareWorkSheet(delay_sheet);
 		prepareWorkSheet(notbooked_sheet);
+		//Loop for traversing all the Purchase Order
 		for (Iterator<Map.Entry<String, Map<String, PO>>> entries = poMap.entrySet().iterator(); entries.hasNext();) {
 			Map.Entry<String, Map<String, PO>> entry = entries.next();
 			for (Iterator<Map.Entry<String, PO>> poEntries = entry.getValue().entrySet().iterator(); poEntries
@@ -122,7 +123,8 @@ public class AnalysisService {
 				Map.Entry<String, PO> poEntry = poEntries.next();
 				PO po = poEntry.getValue();
 				for (Record record : po.getRecords()) {
-					Result result = new Result(po.getPurchaseOrder(), po.getSourceERP(), po.getVendor(),
+					//Initialize an empty match Result for an Purchase Order record
+					Result result = new Result(po.getPurchaseOrder(), po.getPlant(),po.getSourceERP(), po.getVendor(),
 							record.getLine(), record.getItem(), record.getItemQty(), record.getPlanDate());
 					if (booksMap.containsKey(entry.getKey())) {
 						if (booksMap.get(entry.getKey()).containsKey(poEntry.getKey())) {
