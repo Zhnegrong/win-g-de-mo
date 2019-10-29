@@ -1,0 +1,53 @@
+<core:View height="100%" 
+    xmlns:core="sap.ui.core" 
+    xmlns="sap.m" 
+    xmlns:tnt="sap.tnt" 
+    xmlns:mvc="sap.ui.core.mvc" 
+    xmlns:wt="sap.wing.ui.control" controllerName="sap.wing.ui.controller.home">
+
+
+    <Label text="Client id" class="sapUiSmallMargin" />
+    <Input value="{data>/0/last_name}" valueLiveUpdate="true" width="200px" enabled="{/enabled}" />
+    <Label text="Client Name" class="sapUiSmallMargin" />
+    <Input value="{clients>/DATA/CLIENT/name}" valueLiveUpdate="true" width="200px" enabled="{/enabled}" />
+
+
+
+    <Table id="tableNamedModel" fixedLayout="false" inset="false" 
+    	items="{ 
+       			 path  : 'data>/',
+        		sorter: {  path : 'id', descending: true  }
+        		}">
+        <headerToolbar>
+            <OverflowToolbar>
+            <content>
+                <Title text="customers" level="H2"/>
+                <ToolbarSpacer></ToolbarSpacer>
+                <Button icon="sap-icon://refresh" press="onRefresh" />
+             </content>
+            </OverflowToolbar>
+        </headerToolbar>
+        <infoToolbar>
+			<Toolbar active="ture">
+				<Label text="customers details."/>
+			</Toolbar>
+		</infoToolbar>
+        <columns>
+            <Column>
+                <Text text="ID" />
+            </Column>
+            <Column>
+                <Text text="Quantities" />
+            </Column>
+        </columns>
+        <items>
+            <ColumnListItem>
+                <cells>
+                    <Text text="{data>company}" />
+                    <Text text="{data>id}" />
+                </cells>
+            </ColumnListItem>
+        </items>
+    </Table>
+
+</core:View>

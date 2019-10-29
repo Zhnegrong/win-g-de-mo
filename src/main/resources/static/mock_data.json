@@ -1,0 +1,38 @@
+[
+  {
+    "notes": "",
+    "date_created": "2019-07-25T09:25:16Z",
+    "accepts_product_review_abandoned_cart_emails": true,
+    "last_name": "Test",
+    "registration_ip_address": "43.240.129.77",
+    "date_modified": "2019-07-25T09:25:16Z",
+    "phone": "",
+    "company": "TestCompany",
+    "id": 1,
+    "tax_exempt_category": "",
+    "customer_group_id": 0,
+    "first_name": "Jim",
+    "email": "jim.test@testcompany.com",
+    "authentication": {
+      "force_password_reset": false
+    }
+  },  {
+    "notes": "",
+    "date_created": "2019-07-25T09:25:16Z",
+    "accepts_product_review_abandoned_cart_emails": true,
+    "last_name": "Test",
+    "registration_ip_address": "43.240.129.77",
+    "date_modified": "2019-07-25T09:25:16Z",
+    "phone": "",
+    "company": "TestCompany",
+    "id": 1,
+    "tax_exempt_category": "",
+    "customer_group_id": 0,
+    "first_name": "Jim",
+    "email": "jim.test@testcompany.com",
+    "authentication": {
+      "force_password_reset": false
+    }
+  }
+  
+]
