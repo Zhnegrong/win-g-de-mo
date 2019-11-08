@@ -109,12 +109,15 @@ public class AnalysisService {
 	public List<Result> compareBookingWithPO(Map<String, Map<String, PO>> poMap,
 			Map<String, Map<String, Booking>> booksMap) throws Exception {
 		//Create the new workbook and insert the first line
+		List<Result> results = new ArrayList<Result>();
 		XSSFWorkbook workbook = new XSSFWorkbook();
 		XSSFSheet delay_sheet = workbook.createSheet("delay");
-		int delay_rowNum = 1, notbooked_rowNum = 1;
 		XSSFSheet notbooked_sheet = workbook.createSheet("notbooked");
+		XSSFSheet normal_sheet = workbook.createSheet("normal");
+		int delay_rowNum = 1, notbooked_rowNum = 1,normal_rowNum=1;
 		prepareWorkSheet(delay_sheet);
 		prepareWorkSheet(notbooked_sheet);
+		prepareWorkSheet(normal_sheet);
 		//Loop for traversing all the Purchase Order
 		for (Iterator<Map.Entry<String, Map<String, PO>>> entries = poMap.entrySet().iterator(); entries.hasNext();) {
 			Map.Entry<String, Map<String, PO>> entry = entries.next();
@@ -128,7 +131,9 @@ public class AnalysisService {
 							record.getLine(), record.getItem(), record.getItemQty(), record.getPlanDate());
 					if (booksMap.containsKey(entry.getKey())) {
 						if (booksMap.get(entry.getKey()).containsKey(poEntry.getKey())) {
+							// Find out the booking with same PO and Plant
 							Booking booking = booksMap.get(entry.getKey()).get(poEntry.getKey());
+							
 							List<Record> bksRecords = booking.getRecords().get(record.getItem());
 							List<Record> restRecords = new ArrayList<Record>();
 							int actualQty = result.getonTimeItemQty();
@@ -139,36 +144,39 @@ public class AnalysisService {
 									} else {
 										long days = ChronoUnit.DAYS.between(bk.getPlanDate().toInstant(),
 												record.getPlanDate().toInstant());
-										actualQty = actualQty + bk.getItemQty();
-										int rest = actualQty - result.getItemQty();
+										actualQty = actualQty + bk.getItemQty(); 	 
+										int rest = actualQty - result.getItemQty();	 
 										if (days >= 0) {
 											if (rest > 0) {
 												bk.setItemQty(rest);
 												result.setonTimeItemQty(result.getItemQty());
+												result.setBookedQte(result.getItemQty());
 												restRecords.add(bk);
 											} else if (rest == 0) {
 												result.setonTimeItemQty(result.getItemQty());
+												result.setBookedQte(result.getItemQty());
 											} else {
 												result.setonTimeItemQty(actualQty);
+												result.setBookedQte(result.getItemQty());
 											}
 										} else {
 											if (rest > 0) {
-												bk.setItemQty(rest);
-												DelayRecord dealy = new DelayRecord(days, (bk.getItemQty() - rest),
+												DelayRecord dealy = new DelayRecord(days, (bk.getItemQty() - rest),  
 														bk.getPlanDate());
 												result.addRecord(dealy);
-												result.setonTimeItemQty(result.getItemQty());
+												result.setBookedQte(result.getItemQty());
+												bk.setItemQty(rest);
 												restRecords.add(bk);
 											} else if (rest == 0) {
 												DelayRecord dealy = new DelayRecord(days, (bk.getItemQty()),
 														bk.getPlanDate());
 												result.addRecord(dealy);
-												result.setonTimeItemQty(result.getItemQty());
+												result.setBookedQte(result.getItemQty());
 											} else {
 												DelayRecord dealy = new DelayRecord(days, (bk.getItemQty()),
 														bk.getPlanDate());
 												result.addRecord(dealy);
-												result.setonTimeItemQty(actualQty);
+												result.setBookedQte(actualQty);
 											}
 										}
 									}
@@ -180,9 +188,10 @@ public class AnalysisService {
 					}
 					if (!result.getRecords().isEmpty()) {
 						delay_rowNum=writeResultToExcel(delay_sheet, result, delay_rowNum);
-					}
-					if (result.getonTimeItemQty() < result.getItemQty()) {
+					}else if (result.getBookedQte() < result.getItemQty()) {
 						notbooked_rowNum=writeResultToExcel(notbooked_sheet, result, notbooked_rowNum);
+					}else {
+						normal_rowNum=writeResultToExcel(normal_sheet, result, normal_rowNum);
 					}
 					results.add(result);
 				}
@@ -211,6 +220,8 @@ public class AnalysisService {
 		cell = row.createCell(colNum++);
 		cell.setCellValue("PurchaseOrder");
 		cell = row.createCell(colNum++);
+		cell.setCellValue("Plant");
+		cell = row.createCell(colNum++);
 		cell.setCellValue("Item");
 		cell = row.createCell(colNum++);
 		cell.setCellValue("Line");
@@ -220,6 +231,8 @@ public class AnalysisService {
 		cell.setCellValue("ItemQty");
 		cell = row.createCell(colNum++);
 		cell.setCellValue("onTimeItemQty");
+		cell = row.createCell(colNum++);
+		cell.setCellValue("bookedQty");
 		cell = row.createCell(colNum++);
 		cell.setCellValue("DelayDays");
 		cell = row.createCell(colNum++);
@@ -238,6 +251,8 @@ public class AnalysisService {
 			cell = row.createCell(colNum++);
 			cell.setCellValue(result.getPurchaseOrder());
 			cell = row.createCell(colNum++);
+			cell.setCellValue(result.getBookedDC());
+			cell = row.createCell(colNum++);
 			cell.setCellValue(result.getItem());
 			cell = row.createCell(colNum++);
 			cell.setCellValue(result.getLine());
@@ -247,7 +262,10 @@ public class AnalysisService {
 			cell.setCellValue(result.getItemQty());
 			cell = row.createCell(colNum++);
 			cell.setCellValue(result.getonTimeItemQty());
-		}
+			cell = row.createCell(colNum++);
+			cell.setCellValue(result.getBookedQte());
+			
+		}else {
 		for (DelayRecord record : result.getRecords()) {
 			Row row = sheet.createRow(rowNum++);
 			int colNum =0;
@@ -258,6 +276,8 @@ public class AnalysisService {
 			cell = row.createCell(colNum++);
 			cell.setCellValue(result.getPurchaseOrder());
 			cell = row.createCell(colNum++);
+			cell.setCellValue(result.getBookedDC());
+			cell = row.createCell(colNum++);
 			cell.setCellValue(result.getItem());
 			cell = row.createCell(colNum++);
 			cell.setCellValue(result.getLine());
@@ -268,11 +288,14 @@ public class AnalysisService {
 			cell = row.createCell(colNum++);
 			cell.setCellValue(result.getonTimeItemQty());
 			cell = row.createCell(colNum++);
+			cell.setCellValue(result.getBookedQte());
+			cell = row.createCell(colNum++);
 			cell.setCellValue(record.getDelayDays());
 			cell = row.createCell(colNum++);
 			cell.setCellValue(record.getDelayQte());
 			cell = row.createCell(colNum++);
 			cell.setCellValue(record.getShipDate());
+		}
 		}
 		return rowNum;
 	}
